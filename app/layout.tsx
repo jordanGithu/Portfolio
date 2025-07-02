@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import MangaCanvas from '../components/MangaCanvas'
 
 export const metadata: Metadata = {
   title: "Jordan Neller - Portfolio Manga",
@@ -25,6 +26,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <MangaCanvas />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
         </ThemeProvider>

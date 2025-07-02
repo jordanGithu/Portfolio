@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { Input } from "@/components/ui/input"
@@ -28,6 +28,14 @@ import ContactForm from '../components/ContactForm'
 import InfoCard from '@/components/ui/InfoCard'
 import SkillBadge from '@/components/ui/SkillBadge'
 import ProjectCard from '@/components/ui/ProjectCard'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from '@/components/ui/carousel';
+import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
 
 export default function OnePunchManPortfolio() {
   const [activeSection, setActiveSection] = useState("accueil")
@@ -41,6 +49,23 @@ export default function OnePunchManPortfolio() {
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
   const [formError, setFormError] = useState<string | null>(null)
   const [formSuccess, setFormSuccess] = useState<string | null>(null)
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const emblaApiRef = useRef<UseEmblaCarouselType[1] | null>(null);
+  const [formationHoverDir, setFormationHoverDir] = useState<'left' | 'right' | null>(null);
+  const [formationDropped, setFormationDropped] = useState(false);
+  const [experienceHoverDir, setExperienceHoverDir] = useState<'left' | 'right' | null>(null);
+  const [experienceDropped, setExperienceDropped] = useState(false);
+  const [interetHoverDir, setInteretHoverDir] = useState<'left' | 'right' | null>(null);
+  const [interetDropped, setInteretDropped] = useState(false);
+  const [showDeadpoolDesc, setShowDeadpoolDesc] = useState(false);
+
+  const onomatopeiaPositionMap: Record<string, React.CSSProperties> = {
+    whoosh: { top: "20%", left: "10%" },
+    click: { top: "30%", right: "12%" },
+    zoom: { bottom: "18%", left: "25%" },
+    flash: { top: "40%", left: "50%", transform: "translateX(-50%)" },
+    pow: { bottom: "10%", right: "25%" },
+  };
 
   useEffect(() => {
     setMounted(true)
@@ -156,7 +181,9 @@ export default function OnePunchManPortfolio() {
       description:
         "Création d'un site de cinéma complet avec HTML/CSS, JavaScript (fetch), PHP/SQL, intégration BDD et affichage dynamique.",
       technologies: ["HTML/CSS", "JavaScript", "PHP", "SQL"],
-      type: "Web Development",
+      type: "Fullstack",
+      detailedDescription: `J'ai créé un site de cinéma en Fullstack (HTML, CSS, JS, PHP, SQL) pour afficher les films, gérer les utilisateurs et les réservations. J'ai appris à faire communiquer le front, le back et à manipuler une vraie base de données.`,
+      url: "https://github.com/EpitechWebAcademiePromo2026/W-PHP-501-LYN-1-1-mycinema-jordan.neller",
     },
     {
       title: "Clone Twitter",
@@ -164,19 +191,25 @@ export default function OnePunchManPortfolio() {
         "Projet en groupe - Frontend (HTML/CSS/JavaScript), backend (PHP), BDD (SQL), système de posts (CRUD).",
       technologies: ["HTML/CSS", "JavaScript", "PHP", "SQL"],
       type: "Full Stack",
+      detailedDescription: `Projet de groupe : refaire un mini Twitter. J'ai bossé sur la recherche et le CRUD des posts (hashtags, likes, commentaires). J'ai pu apprendre à utiliser Git en équipe et à organiser un vrai projet web.`,
+      url: "https://github.com/jordanGithu/W-WEB-090-LYN-1-1-academie-aliyo.moussa",
     },
     {
       title: "Clone Spotify",
       description:
         "Création d'un clone Spotify en groupe avec hooks, state management, requêtes API et intégration backend.",
       technologies: ["React.js", "JavaScript", "API"],
-      type: "Frontend",
+      type: "Backend",
+      detailedDescription: `Projet Spotify en React : j'ai fait les pages (albums, artistes, recherche) et les requêtes API/SQL pour afficher les données. J'ai appris à connecter un front React à une API et à gérer les données en JSON.`,
+      url: "https://github.com/EpitechWebAcademiePromo2026/W-WEB-090-LYN-1-1-spotify-jihad.bakari",
     },
     {
       title: "Explorateur de Fichiers",
       description: "Développement d'un explorateur de fichiers utilisant Django (Python).",
       technologies: ["Python", "Django"],
       type: "Backend",
+      detailedDescription: `Explorateur de fichiers Django en groupe. Je me suis occupé des routes, de l'arborescence et du tri/recherche. J'ai pu apprendre la gestion des fichiers en Python et la récursivité.`,
+      url: "https://github.com/EpitechWebAcademiePromo2026/W-WEB-502-LYN-2-1-H5AI-aliyo.moussa",
     },
   ]
 
@@ -372,10 +405,12 @@ export default function OnePunchManPortfolio() {
       <AnimatePresence>
         {hoveredElement && (
           <motion.div
+            key={hoveredElement}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed top-1/3 right-12 pointer-events-none z-40"
+            className="fixed pointer-events-none z-40"
+            style={onomatopeiaPositionMap[hoveredElement]}
           >
             <div
               className={`text-6xl font-black relative ${isDark ? "text-white/40" : "text-black/40"} jojo-vibrate`}
@@ -663,7 +698,7 @@ export default function OnePunchManPortfolio() {
                   onHoverEnd={() => setHoveredElement(null)}
                 >
                   <Download className="mr-2 h-5 w-5 inline" />
-                  TÉLÉCHARGER CV
+                  TÉLÉCHARGER MON CV
                 </motion.button>
               </motion.div>
             </motion.div>
@@ -732,7 +767,7 @@ export default function OnePunchManPortfolio() {
                   transition={{ duration: 2.5, repeat: Number.POSITIVE_INFINITY }}
                   style={{ background: "#4fc3f7" }}
                 >
-                  <span className="text-sm font-black text-white">CODE!</span>
+                  <span className="text-xs font-black text-white">CODE!</span>
                 </motion.div>
               </div>
             </motion.div>
@@ -751,26 +786,28 @@ export default function OnePunchManPortfolio() {
           }`}
         />
         <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 relative z-10">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
+          <div className="w-full flex justify-center mb-2">
             <h2
-              className={`text-5xl lg:text-6xl font-black mb-4 relative inline-block transition-colors duration-300 ${
-                isDark ? "text-white" : "text-black"
-              }`}
+              className={`text-3xl lg:text-4xl font-extrabold transition-colors duration-300 drop-shadow pointer-events-none select-none ${isDark ? "text-white" : "text-black"}`}
               style={{
                 fontFamily: "'Impact', 'Arial Black', sans-serif",
-                textShadow: isDark ? "3px 3px 0px black" : "3px 3px 0px white",
-                WebkitTextStroke: isDark ? "2px white" : "2px black",
+                fontWeight: 700,
+                letterSpacing: 1,
+                transform: "rotate(-5deg) scale(1.13)",
+                textShadow: isDark
+                  ? "2px 2px 0px #000, 1px 1px 0px #fff"
+                  : "2px 2px 0px #fff, 1px 1px 0px #000",
+                WebkitTextStroke: isDark ? "1.5px white" : "1.5px black",
+                background: isDark ? "#222" : "#fff",
+                padding: "0.15em 1.3em",
+                borderRadius: 10,
+                border: isDark ? "3px solid #fff" : "3px solid #000",
+                boxShadow: "0 6px 18px #0005",
               }}
             >
-              MON HISTOIRE
+              MON PARCOURS
             </h2>
-          </motion.div>
+          </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Story panel */}
@@ -783,15 +820,6 @@ export default function OnePunchManPortfolio() {
                 isDark ? "bg-gray-800 border-white" : "bg-white border-black"
               }`}
             >
-              <h3
-                className={`text-3xl font-black mb-6 transition-colors duration-300 ${
-                  isDark ? "text-white" : "text-black"
-                }`}
-                style={{ fontFamily: "'Impact', 'Arial Black', sans-serif" }}
-              >
-                MON PARCOURS
-              </h3>
-
               <div
                 className={`space-y-6 leading-relaxed font-medium transition-colors duration-300 ${
                   isDark ? "text-gray-300" : "text-black"
@@ -840,7 +868,7 @@ export default function OnePunchManPortfolio() {
                 onHoverEnd={() => setHoveredElement(null)}
               >
                 <motion.div
-                  className="absolute -top-2 -left-2 px-2 py-1 border-2 border-black transform -rotate-12"
+                  className="absolute bottom-2 left-2 px-2 py-1 border-2 border-black transform -rotate-12"
                   animate={{ rotate: [-12, -18, -12] }}
                   transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                   style={{ background: "#4fc3f7" }}
@@ -848,14 +876,44 @@ export default function OnePunchManPortfolio() {
                   <span className="text-xs font-black text-white">STUDY!</span>
                 </motion.div>
 
-                <h4
-                  className={`text-2xl font-black mb-4 transition-colors duration-300 ${
-                    isDark ? "text-white" : "text-black"
-                  }`}
-                  style={{ fontFamily: "'Impact', 'Arial Black', sans-serif" }}
+                <motion.h4
+                  className={`text-xl font-extrabold mb-4 transition-colors duration-300 absolute -top-6 -left-4 z-20 drop-shadow pointer-events-none select-none ${isDark ? "text-white" : "text-black"}`}
+                  style={{
+                    fontFamily: "'Impact', 'Arial Black', sans-serif",
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                    transform: "rotate(-6deg) scale(1.08)",
+                    textShadow: isDark
+                      ? "2px 2px 0px #000, 1px 1px 0px #fff"
+                      : "2px 2px 0px #fff, 1px 1px 0px #000",
+                    WebkitTextStroke: isDark ? "1px white" : "1px black",
+                    background: isDark ? "#222" : "#fff",
+                    padding: "0.1em 0.8em",
+                    borderRadius: 8,
+                    border: isDark ? "2px solid #fff" : "2px solid #000",
+                    boxShadow: "0 4px 12px #0004",
+                    cursor: formationDropped ? 'default' : 'pointer',
+                  }}
+                  initial={false}
+                  animate={
+                    formationDropped
+                      ? { y: '80vh', rotate: 20, opacity: 0.7, transition: { type: 'spring', stiffness: 60, damping: 12 } }
+                      : formationHoverDir === 'left'
+                        ? { x: -30, rotate: -18, transition: { type: 'spring', stiffness: 300, damping: 18 } }
+                        : formationHoverDir === 'right'
+                          ? { x: 30, rotate: 18, transition: { type: 'spring', stiffness: 300, damping: 18 } }
+                          : { x: 0, rotate: -6 }
+                  }
+                  onMouseMove={e => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    setFormationHoverDir(mouseX < rect.width / 2 ? 'left' : 'right');
+                  }}
+                  onMouseLeave={() => setFormationHoverDir(null)}
+                  onClick={() => setFormationDropped(true)}
                 >
                   FORMATION
-                </h4>
+                </motion.h4>
                 <div className="space-y-4">
                   {formations.map((formation, index) => (
                     <div
@@ -896,7 +954,7 @@ export default function OnePunchManPortfolio() {
                 onHoverEnd={() => setHoveredElement(null)}
               >
                 <motion.div
-                  className="absolute -top-2 -right-2 px-2 py-1 border-2 border-black transform rotate-12"
+                  className="absolute bottom-2 right-2 px-2 py-1 border-2 border-black transform rotate-12"
                   animate={{ rotate: [12, 18, 12] }}
                   transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                   style={{ background: "#66bb6a" }}
@@ -904,14 +962,44 @@ export default function OnePunchManPortfolio() {
                   <span className="text-xs font-black text-white">WORK!</span>
                 </motion.div>
 
-                <h4
-                  className={`text-2xl font-black mb-4 transition-colors duration-300 ${
-                    isDark ? "text-white" : "text-black"
-                  }`}
-                  style={{ fontFamily: "'Impact', 'Arial Black', sans-serif" }}
+                <motion.h4
+                  className={`text-xl font-extrabold mb-4 transition-colors duration-300 absolute -top-6 right-2 z-20 drop-shadow pointer-events-none select-none ${isDark ? "text-white" : "text-black"}`}
+                  style={{
+                    fontFamily: "'Impact', 'Arial Black', sans-serif",
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                    transform: "rotate(5deg) scale(1.07)",
+                    textShadow: isDark
+                      ? "2px 2px 0px #000, 1px 1px 0px #fff"
+                      : "2px 2px 0px #fff, 1px 1px 0px #000",
+                    WebkitTextStroke: isDark ? "1px white" : "1px black",
+                    background: isDark ? "#222" : "#fff",
+                    padding: "0.1em 0.8em",
+                    borderRadius: 8,
+                    border: isDark ? "2px solid #fff" : "2px solid #000",
+                    boxShadow: "0 4px 12px #0004",
+                    cursor: experienceDropped ? 'default' : 'pointer',
+                  }}
+                  initial={false}
+                  animate={
+                    experienceDropped
+                      ? { y: '80vh', rotate: 20, opacity: 0.7, transition: { type: 'spring', stiffness: 60, damping: 12 } }
+                      : experienceHoverDir === 'left'
+                        ? { x: -30, rotate: -18, transition: { type: 'spring', stiffness: 300, damping: 18 } }
+                        : experienceHoverDir === 'right'
+                          ? { x: 30, rotate: 18, transition: { type: 'spring', stiffness: 300, damping: 18 } }
+                          : { x: 0, rotate: 5 }
+                  }
+                  onMouseMove={e => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    setExperienceHoverDir(mouseX < rect.width / 2 ? 'left' : 'right');
+                  }}
+                  onMouseLeave={() => setExperienceHoverDir(null)}
+                  onClick={() => setExperienceDropped(true)}
                 >
                   EXPÉRIENCES
-                </h4>
+                </motion.h4>
                 <div className="space-y-4">
                   {experiences.map((experience, index) => (
                     <div
@@ -960,14 +1048,44 @@ export default function OnePunchManPortfolio() {
                   <span className="text-xs font-black text-white">FUN!</span>
                 </motion.div>
 
-                <h4
-                  className={`text-2xl font-black mb-4 transition-colors duration-300 ${
-                    isDark ? "text-white" : "text-black"
-                  }`}
-                  style={{ fontFamily: "'Impact', 'Arial Black', sans-serif" }}
+                <motion.h4
+                  className={`text-xl font-extrabold mb-4 transition-colors duration-300 absolute -bottom-6 left-1/2 -translate-x-1/2 z-20 drop-shadow pointer-events-none select-none ${isDark ? "text-white" : "text-black"}`}
+                  style={{
+                    fontFamily: "'Impact', 'Arial Black', sans-serif",
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                    transform: "rotate(-3deg) scale(1.06)",
+                    textShadow: isDark
+                      ? "2px 2px 0px #000, 1px 1px 0px #fff"
+                      : "2px 2px 0px #fff, 1px 1px 0px #000",
+                    WebkitTextStroke: isDark ? "1px white" : "1px black",
+                    background: isDark ? "#222" : "#fff",
+                    padding: "0.1em 0.8em",
+                    borderRadius: 8,
+                    border: isDark ? "2px solid #fff" : "2px solid #000",
+                    boxShadow: "0 4px 12px #0004",
+                    cursor: interetDropped ? 'default' : 'pointer',
+                  }}
+                  initial={false}
+                  animate={
+                    interetDropped
+                      ? { y: '80vh', rotate: 20, opacity: 0.7, transition: { type: 'spring', stiffness: 60, damping: 12 } }
+                      : interetHoverDir === 'left'
+                        ? { x: -30, rotate: -18, transition: { type: 'spring', stiffness: 300, damping: 18 } }
+                        : interetHoverDir === 'right'
+                          ? { x: 30, rotate: 18, transition: { type: 'spring', stiffness: 300, damping: 18 } }
+                          : { x: 0, rotate: -3 }
+                  }
+                  onMouseMove={e => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    setInteretHoverDir(mouseX < rect.width / 2 ? 'left' : 'right');
+                  }}
+                  onMouseLeave={() => setInteretHoverDir(null)}
+                  onClick={() => setInteretDropped(true)}
                 >
                   CENTRES D'INTÉRÊT
-                </h4>
+                </motion.h4>
                 <div className="flex flex-wrap gap-3">
                   {[
                     { icon: Music, label: "MUSIQUE" },
@@ -1029,48 +1147,22 @@ export default function OnePunchManPortfolio() {
           >
             <div className="text-center mb-8">
               <motion.h3
-                className={`text-4xl font-black relative inline-block transition-colors duration-300 ${
-                  isDark ? "text-white" : "text-black"
-                }`}
+                className={`text-lg font-extrabold mb-4 transition-colors duration-300 absolute -top-7 left-1/2 -translate-x-1/2 z-20 drop-shadow pointer-events-none select-none text-red-600`}
                 style={{
                   fontFamily: "'Impact', 'Arial Black', sans-serif",
-                  textShadow: isDark ? "2px 2px 0px black" : "2px 2px 0px white",
-                  WebkitTextStroke: isDark ? "1px white" : "1px black",
-                }}
-                animate={{
-                  scale: [1, 1.05, 1],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Number.POSITIVE_INFINITY,
+                  fontWeight: 700,
+                  letterSpacing: 1,
+                  transform: "rotate(-4deg) scale(1.05)",
+                  textShadow: "2px 2px 0px #fff, 1px 1px 0px #000",
+                  WebkitTextStroke: "1px #fff",
+                  background: "#fff",
+                  padding: "0.1em 0.7em",
+                  borderRadius: 8,
+                  border: "2px solid #000",
+                  boxShadow: "0 4px 12px #0004",
                 }}
               >
-                COMPÉTENCES TECHNIQUES
-                {/* Dynamic effect lines */}
-                <div className="absolute inset-0 pointer-events-none">
-                  {[...Array(6)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className={`absolute opacity-20 ${isDark ? "bg-white" : "bg-black"}`}
-                      style={{
-                        width: "2px",
-                        height: "30px",
-                        left: `${20 + i * 15}%`,
-                        top: "50%",
-                        transform: `rotate(${-20 + i * 8}deg)`,
-                      }}
-                      animate={{
-                        scaleY: [0.5, 1.5, 0.5],
-                        opacity: [0.1, 0.3, 0.1],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Number.POSITIVE_INFINITY,
-                        delay: i * 0.1,
-                      }}
-                    />
-                  ))}
-                </div>
+                IMPORTANT
               </motion.h3>
             </div>
 
@@ -1122,10 +1214,22 @@ export default function OnePunchManPortfolio() {
               className="p-8 relative"
             >
               <h3
-                className={`text-3xl font-black mb-6 transition-colors duration-300 ${
-                  isDark ? "text-white" : "text-black"
-                }`}
-                style={{ fontFamily: "'Impact', 'Arial Black', sans-serif" }}
+                className={`text-lg font-extrabold mb-4 transition-colors duration-300 absolute -top-7 left-1/2 -translate-x-1/2 z-20 drop-shadow pointer-events-none select-none ${isDark ? "text-white" : "text-black"}`}
+                style={{
+                  fontFamily: "'Impact', 'Arial Black', sans-serif",
+                  fontWeight: 700,
+                  letterSpacing: 1,
+                  transform: "rotate(3deg) scale(1.04)",
+                  textShadow: isDark
+                    ? "2px 2px 0px #000, 1px 1px 0px #fff"
+                    : "2px 2px 0px #fff, 1px 1px 0px #000",
+                  WebkitTextStroke: isDark ? "1px white" : "1px black",
+                  background: isDark ? "#222" : "#fff",
+                  padding: "0.1em 0.7em",
+                  borderRadius: 8,
+                  border: isDark ? "2px solid #fff" : "2px solid #000",
+                  boxShadow: "0 4px 12px #0004",
+                }}
               >
                 COMPÉTENCES PERSONNELLES
               </h3>
@@ -1221,78 +1325,117 @@ export default function OnePunchManPortfolio() {
               MES PROJETS
             </h2>
           </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {projects.map((project, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className={`border-4 p-8 relative cursor-pointer transition-colors duration-300 ${
-                  isDark ? "bg-gray-800 border-white" : "bg-white border-black"
-                }`}
-                whileHover={{ scale: 1.02 }}
-                onHoverStart={() => setHoveredElement("zoom")}
-                onHoverEnd={() => setHoveredElement(null)}
+          <div className="flex items-center justify-between mb-6">
+            <div className="text-2xl font-black impact-title flex items-center gap-4 relative">
+              {/* Chibi Deadpool + bulle de chat descriptif à gauche du bouton Random page */}
+              <div className="flex flex-col items-center mr-2 select-none relative" style={{ minWidth: 80 }}>
+                <motion.img
+                  src="/chibi_deadpool .png"
+                  alt="Chibi Deadpool"
+                  initial={{ x: -30, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  whileHover={{ scale: 1.08, rotate: -8 }}
+                  transition={{ duration: 0.4 }}
+                  style={{ width: 64, height: 64, objectFit: 'contain', cursor: 'pointer', zIndex: 10 }}
+                  title="Clique sur moi pour voir le descriptif !"
+                  onClick={() => setShowDeadpoolDesc(v => !v)}
+                />
+                <span
+                  className="mt-1 px-2 py-1 text-xs font-black rounded-full border-2 border-black bg-white shadow"
+                  style={{ fontFamily: "'Impact', 'Arial Black', sans-serif", color: '#e3342f', boxShadow: '2px 2px 0 #0002' }}
+                >
+                  Clique sur moi !
+                </span>
+                {/* Bulle de chat Deadpool */}
+                {showDeadpoolDesc && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="deadpool-bubble"
+                  >
+                    <span
+                      style={{ display: 'inline-block', animation: 'deadpool-pop 0.45s cubic-bezier(.36,1.5,.64,1)' }}
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          (projects[currentIndex]?.detailedDescription || "Pas de descriptif disponible.")
+                            .replace(/(React|PHP|HTML|CSS|JavaScript|Django|API|SQL)/gi, '<strong>$1</strong>')
+                            .replace(/(publier|recherche|CRUD|tri|tags|arborescence|gérer|afficher|écouter|organiser)/gi, '<span class="bubble-key">$1</span>')
+                            .replace(/(groupe|équipe|projet)/gi, '<span class="bubble-flash">$1</span>')
+                      }}
+                    />
+                    {/* Flèche animée */}
+                    <span className="deadpool-bubble-arrow">
+                      <svg width="36" height="36" viewBox="0 0 24 24">
+                        <path d="M24 0 Q8 24 0 24" fill="#fff" stroke="#111" strokeWidth="3" />
+                      </svg>
+                    </span>
+                  </motion.div>
+                )}
+              </div>
+              <span style={{ fontFamily: "'Impact', 'Arial Black', sans-serif", letterSpacing: 2 }}>
+                {`Chapitre ${currentIndex + 1} : ${projects[currentIndex]?.title || ''}`}
+              </span>
+              {/* Onomatopée animée */}
+              <motion.span
+                key={currentIndex}
+                initial={{ opacity: 0, y: -20, scale: 0.7 }}
+                animate={{ opacity: 1, y: 0, scale: [1, 1.2, 1] }}
+                exit={{ opacity: 0, y: 20, scale: 0.7 }}
+                transition={{ duration: 0.5 }}
+                className="ml-2 text-3xl font-black text-black/60 select-none pointer-events-none"
+                style={{ fontFamily: "'Impact', 'Arial Black', sans-serif", textShadow: '2px 2px 0 #fff, 4px 4px 0 #000' }}
               >
-                <motion.div
-                  className="absolute -top-2 -left-2 px-2 py-1 border-2 border-black transform -rotate-12"
-                  animate={{ rotate: [-12, -18, -12] }}
-                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                  style={{ background: "#ffd700" }}
-                >
-                  <span className="text-xs font-black text-black">NEW!</span>
-                </motion.div>
-
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3
-                      className={`text-2xl font-black mb-2 transition-colors duration-300 ${
-                        isDark ? "text-white" : "text-black"
-                      }`}
-                      style={{ fontFamily: "'Impact', 'Arial Black', sans-serif" }}
+                パラッ
+              </motion.span>
+            </div>
+            {/* Bouton Random page */}
+            <button
+              onClick={() => {
+                if (!emblaApiRef.current) return;
+                const random = Math.floor(Math.random() * projects.length);
+                emblaApiRef.current.scrollTo(random);
+              }}
+              className="px-6 py-2 border-4 border-black bg-white text-black font-black rounded-lg shadow-lg text-lg hover:bg-yellow-200 active:scale-95 transition-all duration-200"
+              style={{ fontFamily: "'Impact', 'Arial Black', sans-serif", letterSpacing: 1, boxShadow: '0 2px 8px #0002' }}
+            >
+              Random page
+            </button>
+          </div>
+          <div className="relative">
+            <Carousel
+              className="w-full"
+              opts={{ loop: true }}
+              setApi={(api) => {
+                emblaApiRef.current = api;
+                if (api) {
+                  api.on('select', () => setCurrentIndex(api.selectedScrollSnap()));
+                }
+              }}
+            >
+              <CarouselContent>
+                {projects.map((project, index) => (
+                  <CarouselItem key={index} className="px-2">
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        rotateY: currentIndex === index ? 0 : (index < currentIndex ? -90 : 90),
+                        opacity: currentIndex === index ? 1 : 0.5,
+                        zIndex: currentIndex === index ? 2 : 1,
+                        scale: currentIndex === index ? 1 : 0.95,
+                      }}
+                      transition={{ type: "spring", stiffness: 200, damping: 30 }}
+                      style={{ perspective: 1200 }}
                     >
-                      {project.title}
-                    </h3>
-                    <div
-                      className={`inline-block px-3 py-1 border-2 text-sm font-black transition-colors duration-300 ${
-                        isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-gray-100 border-black text-black"
-                      }`}
-                    >
-                      {project.type}
-                    </div>
-                  </div>
-                  <ExternalLink
-                    className={`h-6 w-6 transition-colors duration-300 ${isDark ? "text-white" : "text-black"}`}
-                  />
-                </div>
-
-                <p
-                  className={`mb-6 leading-relaxed font-medium transition-colors duration-300 ${
-                    isDark ? "text-gray-300" : "text-black"
-                  }`}
-                >
-                  {project.description}
-                </p>
-
-                <div className="flex flex-wrap gap-2">
-                  {project.technologies.map((tech, techIndex) => (
-                    <motion.span
-                      key={techIndex}
-                      className={`px-3 py-1 border-2 text-xs font-black cursor-pointer transition-colors duration-300 ${
-                        isDark ? "bg-white text-black border-white" : "bg-black text-white border-black"
-                      }`}
-                      whileHover={{ scale: 1.1, rotate: 3 }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                    >
-                      {tech}
-                    </motion.span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+                      <ProjectCard project={project} isDark={isDark} index={index} currentIndex={currentIndex} total={projects.length} />
+                    </motion.div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
           </div>
         </div>
       </section>

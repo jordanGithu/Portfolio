@@ -66,7 +66,7 @@ export default function ContactForm() {
         <ValidationError prefix="Message" field="message" errors={state.errors} />
       </div>
       <button type="submit" disabled={state.submitting} className="w-full py-4 font-black border-4 text-lg cursor-pointer transition-colors duration-300 bg-black text-white border-black" style={{ fontFamily: "'Impact', 'Arial Black', sans-serif" }}>
-        ENVOYER LE MESSAGE !
+        ENVOYER UN MESSAGE !
       </button>
     </form>
   );
